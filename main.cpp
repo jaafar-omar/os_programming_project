@@ -10,7 +10,7 @@
 #include <bits/stdc++.h>
 #define INPUT_FILE "C:\\Users\\Asus\\CLionProjects\\bankers_algo\\input_file.txt"
 using namespace std;
-int nprocesses = 5, nresources = 4;
+int ncustomers = 5, nresources = 4;
 vector<int> seq;
 
 typedef struct {
@@ -19,7 +19,7 @@ typedef struct {
     vector<int> Allocation;	    // 2D array Allocation[i,1] = k, means pi has k instances of resource 1
     vector<int> Need;			// 2D array Need[i,1] = k, means pi need k instances of resource 1 to start exec
     bool status;
-} process;
+} customer;
 
 typedef struct {
     string doit;
@@ -28,12 +28,12 @@ typedef struct {
 } command;
 
 
-bool IsSafe(vector<process>  processes, vector<int> available) {
-    int finished = nprocesses;
+bool IsSafe(vector<customer>  customers, vector<int> available) {
+    int finished = ncustomers;
     int j =0;
     while(finished != 0){
         int counter = finished;
-        for(auto i = processes.begin(); i != processes.end(); i++){
+        for(auto i = customers.begin(); i != customers.end(); i++){
             if((*i).status == false ){
                 for( j = 0; j<nresources; j++)
                     if ((*i).Need[j] > available[j]) break;
@@ -55,43 +55,42 @@ bool IsSafe(vector<process>  processes, vector<int> available) {
     return true;
 }
 
-int request_resources(vector<process>  processes, vector<int> available, int p , int req[]){
+int request_resources(vector<customer>  customers, vector<int> available, int p , int req[]){
     int j = 0;
     for( j = 0; j<nresources; j++)
-        if (req[j] > available[j] || req[j] > processes[p].Need[j]) break;
+        if (req[j] > available[j] || req[j] > customers[p].Need[j]) break;
     if(j!=nresources) return -1;
 
     for( j = 0; j<nresources; j++){
-        processes[p].Allocation[j] += req[j];
-        processes[p].Need[j] -= req[j];
+        customers[p].Allocation[j] += req[j];
+        customers[p].Need[j] -= req[j];
         available[j] -= req[j];
     }
-    // Print Need Matrix
-    cout<<"\n\tNeed Matrix";
-    for(int j = -1; j < nprocesses; j++){
-        cout<<endl;
-        if(j==-1){
-            cout<<"  \t";
-            for(int i = 0; i < nresources; i++){
-                cout<<"R"<<i<<"\t";
-            }
-            continue;
-        }
-        cout<<"P"<<j<<"\t";
-        for(int i = 0; i < nresources; i++)
-            cout<<processes[j].Need[i]<<"\t";
-    }
-    cout<<endl<<endl;
+//    // Print Need Matrix
+//    cout<<"\n\tNeed Matrix";
+//    for(int j = -1; j < ncustomers; j++){
+//        cout<<endl;
+//        if(j==-1){
+//            cout<<"  \t";
+//            for(int i = 0; i < nresources; i++){
+//                cout<<"R"<<i<<"\t";
+//            }
+//            continue;
+//        }
+//        cout<<"C"<<j<<"\t";
+//        for(int i = 0; i < nresources; i++)
+//            cout<<customers[j].Need[i]<<"\t";
+//    }
+//    cout<<endl<<endl;
 
-     if(IsSafe(processes, available)) {
+     if(IsSafe(customers, available)) {
          return 0;
      } else { return -1; }
 }
 
-void release_resources(vector<process>& processes,vector<int>& available, int customer_num, int release[]) {
-    cout << "Resources released" << endl;
+void release_resources(vector<customer>& customers,vector<int>& available, int customer_num, int release[]) {
     for (int i = 0; i < nresources; ++i) {
-        processes[customer_num].Allocation[i] -= release[i];
+        customers[customer_num].Allocation[i] -= release[i];
         available[i] += release[i];
     }
 }
@@ -101,7 +100,7 @@ int main(){
     setvbuf(stderr, NULL, _IONBF, 0);
     vector<int> available = {10, 5, 7, 8};				// num of instances for each resource
     vector<command> commands(1);
-    vector<process> processes(nprocesses);
+    vector<customer> customers(ncustomers);
     vector<int> req(nresources,0);
     int request[nresources];
     int release[nresources];
@@ -112,13 +111,13 @@ int main(){
     string readLine;
     readFile.open(INPUT_FILE);
 
-    for(int i = 0; i < nprocesses; i++)
+    for(int i = 0; i < ncustomers; i++)
     {
-        processes[i].Max.resize(nresources);
-        processes[i].Allocation.resize(nresources);
-        processes[i].Need.resize(nresources);
-        processes[i].id = i;
-        processes[i].status= false;
+        customers[i].Max.resize(nresources);
+        customers[i].Allocation.resize(nresources);
+        customers[i].Need.resize(nresources);
+        customers[i].id = i;
+        customers[i].status= false;
     }
 
     if(readFile.is_open()) {
@@ -128,8 +127,8 @@ int main(){
             int value;
             int column_index = 0;
             while( ss >> value ) {
-                processes[row_index].Max[column_index] = value;
-                processes[row_index].Need[column_index] = processes[row_index].Max[column_index] - processes[row_index].Allocation[column_index];
+                customers[row_index].Max[column_index] = value;
+                customers[row_index].Need[column_index] = customers[row_index].Max[column_index] - customers[row_index].Allocation[column_index];
                 column_index++;
                 if(ss.peek() == ',')
                     ss.ignore();
@@ -159,32 +158,47 @@ int main(){
                 request[i] = commands[0].res[i];
             }
 
-            if(request_resources(processes, available, commands[0].id, request) == 0) {
+            if(request_resources(customers, available, commands[0].id, request) == 0) {
                 for (int i = 0; i < nresources; ++i) {
-                    processes[commands[0].id].Allocation[i] += request[i];
-                    processes[commands[0].id].Need[i] -= request[i];
+                    customers[commands[0].id].Allocation[i] += request[i];
+                    customers[commands[0].id].Need[i] -= request[i];
                     available[i] -= request[i];
                 }
                 cout << "Request granted" << endl;
             } else {
                 cout << "This request will leave the system in an unsafe state; request denied!" << endl;
             }
+
         } else if(commands[0].doit == "RL") {
             for (int i = 0; i < nresources; ++i) {
                 release[i] = commands[0].res[i];
             }
-            release_resources(processes, available, commands[0].id, release);
+            release_resources(customers, available, commands[0].id, release);
+            cout << "Resources released successfully!" << endl;
+            for (int i = 0; i < nresources; ++i) {
+                cout << "R" << i << "\t";
+            }
+            cout << endl;
+            for (int i = 0; i < nresources; ++i) {
+                cout << release[i] << "\t";
+            }
+            cout << endl;
+
         } else if(commands[0].doit == "*") {
             // Print Available resources
             cout << "Available Resources: " << endl;
             for (int i = 0; i < nresources; ++i) {
-                cout << available[i] << " ";
+                cout << "R" << i << "\t";
+            }
+            cout << endl;
+            for (int i = 0; i < nresources; ++i) {
+                cout << available[i] << "\t";
             }
             cout << endl;
 
             // Print  Max Matrix
             cout<<"\n\tMax Matrix";
-            for(int j = -1; j < nprocesses; j++){
+            for(int j = -1; j < ncustomers; j++){
                 cout<<endl;
                 if(j==-1){
                     cout<<"  \t";
@@ -193,15 +207,15 @@ int main(){
                     }
                     continue;
                 }
-                cout<<"P"<<j<<"\t";
+                cout<<"C"<<j<<"\t";
                 for(int i = 0; i < nresources; i++)
-                    cout<<processes[j].Max[i]<<"\t";
+                    cout<<customers[j].Max[i]<<"\t";
             }
             cout<<endl;
 
             // Print Allocation Matrix
             cout<<"\n\tAllocation Matrix";
-            for(int j = -1; j < nprocesses; j++){
+            for(int j = -1; j < ncustomers; j++){
                 cout<<endl;
                 if(j==-1){
                     cout<<"  \t";
@@ -210,16 +224,16 @@ int main(){
                     }
                     continue;
                 }
-                cout<<"P"<<j<<"\t";
+                cout<<"C"<<j<<"\t";
                 for(int i = 0; i < nresources; i++)
-                    cout<<processes[j].Allocation[i]<<"\t";
+                    cout<<customers[j].Allocation[i]<<"\t";
             }
             cout<<endl;
 
 
             // Print Need Matrix
             cout<<"\n\tNeed Matrix";
-            for(int j = -1; j < nprocesses; j++){
+            for(int j = -1; j < ncustomers; j++){
                 cout<<endl;
                 if(j==-1){
                     cout<<"  \t";
@@ -228,9 +242,9 @@ int main(){
                     }
                     continue;
                 }
-                cout<<"P"<<j<<"\t";
+                cout<<"C"<<j<<"\t";
                 for(int i = 0; i < nresources; i++)
-                    cout<<processes[j].Need[i]<<"\t";
+                    cout<<customers[j].Need[i]<<"\t";
             }
             cout<<endl;
         }
