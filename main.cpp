@@ -95,6 +95,15 @@ void release_resources(vector<customer>& customers,vector<int>& available, int c
     }
 }
 
+bool check_release(vector<customer> customers, int customer_id, int rel[]) {
+    for (int i = 0; i < nresources; ++i) {
+        if(rel[i] > customers[customer_id].Allocation[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
 int main(){
     setvbuf(stdout, NULL, _IONBF, 0);
     setvbuf(stderr, NULL, _IONBF, 0);
@@ -139,7 +148,7 @@ int main(){
 
     do {
         command req_command;
-        string input = "";
+        string input;
         cout << "Enter Commands: ";
         getline(cin, input);
 
@@ -173,16 +182,39 @@ int main(){
             for (int i = 0; i < nresources; ++i) {
                 release[i] = commands[0].res[i];
             }
-            release_resources(customers, available, commands[0].id, release);
-            cout << "Resources released successfully!" << endl;
-            for (int i = 0; i < nresources; ++i) {
-                cout << "R" << i << "\t";
+
+            if(check_release(customers, commands[0].id, release)) {
+                release_resources(customers, available, commands[0].id, release);
+                cout << "Resources released successfully!" << endl;
+                for (int i = 0; i < nresources; ++i) {
+                    cout << "R" << i << "\t";
+                }
+                cout << endl;
+                for (int i = 0; i < nresources; ++i) {
+                    cout << release[i] << "\t";
+                }
+                cout << endl;
+            } else {
+                cout << "Requested release resources is greater than Allocated resources at C" << commands[0].id << "! It should be less than or equal." << endl;
+                cout << "Requested Release:" << "\t\t" << ">" << "\t" << "Allocated Resources: " << endl;
+                for (int i = 0; i < nresources; ++i) {
+                    cout << "R" << i << "\t";
+                }
+                cout << "\t";
+                for (int i = 0; i < nresources; ++i) {
+                    cout << "R" << i << "\t";
+                }
+                cout << endl;
+
+                for (int i = 0; i < nresources; ++i) {
+                    cout << release[i] << "\t";
+                }
+                cout << "\t";
+                for (int i = 0; i < nresources; ++i) {
+                    cout << customers[commands[0].id].Allocation[i] << "\t";
+                }
+                cout << endl;
             }
-            cout << endl;
-            for (int i = 0; i < nresources; ++i) {
-                cout << release[i] << "\t";
-            }
-            cout << endl;
 
         } else if(commands[0].doit == "*") {
             // Print Available resources
