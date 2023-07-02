@@ -32,7 +32,7 @@ bool IsSafe(vector<customer>  customers, vector<int> available) {
     int j;
     while(finished != 0){
         int counter = finished;
-        for(auto & customer : customers){
+        for(auto & customer : customers) {
             if(!customer.status){
                 for( j = 0; j<nresources; j++)
                     if (customer.Need[j] > available[j]) break;
