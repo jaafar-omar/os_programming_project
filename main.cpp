@@ -13,11 +13,11 @@ int ncustomers = 5, nresources = 4;
 vector<int> seq;
 
 typedef struct {
-    int id = 0;
+    int id;
     vector<int> Max;			// 2D array Max[i,1] = k, means pi need max k instances of resource 1
     vector<int> Allocation;	    // 2D array Allocation[i,1] = k, means pi has k instances of resource 1
     vector<int> Need;			// 2D array Need[i,1] = k, means pi need k instances of resource 1 to start exec
-    bool status = false;
+    bool status;
 } customer;
 
 typedef struct {
