@@ -3,7 +3,6 @@
 //
 
 #include <iostream>
-#include <algorithm>
 #include <vector>
 #include <fstream>
 #include <sstream>
@@ -14,11 +13,11 @@ int ncustomers = 5, nresources = 4;
 vector<int> seq;
 
 typedef struct {
-    int id;
+    int id = 0;
     vector<int> Max;			// 2D array Max[i,1] = k, means pi need max k instances of resource 1
     vector<int> Allocation;	    // 2D array Allocation[i,1] = k, means pi has k instances of resource 1
     vector<int> Need;			// 2D array Need[i,1] = k, means pi need k instances of resource 1 to start exec
-    bool status;
+    bool status = false;
 } customer;
 
 typedef struct {
@@ -30,19 +29,19 @@ typedef struct {
 
 bool IsSafe(vector<customer>  customers, vector<int> available) {
     int finished = ncustomers;
-    int j =0;
+    int j;
     while(finished != 0){
         int counter = finished;
-        for(auto i = customers.begin(); i != customers.end(); i++){
-            if((*i).status == false ){
+        for(auto & customer : customers){
+            if(!customer.status){
                 for( j = 0; j<nresources; j++)
-                    if ((*i).Need[j] > available[j]) break;
+                    if (customer.Need[j] > available[j]) break;
                 if(j == nresources) {
                     finished --;
-                    (*i).status = true;
+                    customer.status = true;
                     for(int k = 0; k < nresources; k++)
-                        available[k] += (*i).Allocation[k];
-                    seq.push_back((*i).id);
+                        available[k] += customer.Allocation[k];
+                    seq.push_back(customer.id);
 
                 }
             }
@@ -55,8 +54,8 @@ bool IsSafe(vector<customer>  customers, vector<int> available) {
     return true;
 }
 
-int request_resources(vector<customer>  customers, vector<int> available, int p , int req[]){
-    int j = 0;
+int request_resources(vector<customer>  customers, vector<int> available, int p , const int req[]){
+    int j;
     for( j = 0; j<nresources; j++)
         if (req[j] > available[j] || req[j] > customers[p].Need[j]) break;
     if(j!=nresources) return -1;
@@ -88,14 +87,14 @@ int request_resources(vector<customer>  customers, vector<int> available, int p 
      } else { return -1; }
 }
 
-void release_resources(vector<customer>& customers,vector<int>& available, int customer_num, int release[]) {
+void release_resources(vector<customer>& customers,vector<int>& available, int customer_num, const int release[]) {
     for (int i = 0; i < nresources; ++i) {
         customers[customer_num].Allocation[i] -= release[i];
         available[i] += release[i];
     }
 }
 
-bool check_release(vector<customer> customers, int customer_id, int rel[]) {
+bool check_release(vector<customer> customers, int customer_id, const int rel[]) {
     for (int i = 0; i < nresources; ++i) {
         if(rel[i] > customers[customer_id].Allocation[i]) {
             return false;
@@ -105,16 +104,14 @@ bool check_release(vector<customer> customers, int customer_id, int rel[]) {
 }
 
 int main(){
-    setvbuf(stdout, NULL, _IONBF, 0);
-    setvbuf(stderr, NULL, _IONBF, 0);
+    setvbuf(stdout, nullptr, _IONBF, 0);
+    setvbuf(stderr, nullptr, _IONBF, 0);
     vector<int> available = {10, 5, 7, 8};				// num of instances for each resource
     vector<command> commands(1);
     vector<customer> customers(ncustomers);
     vector<int> req(nresources,0);
     int request[nresources];
     int release[nresources];
-    int choice;
-    int p;
     char sysexit;
     ifstream readFile;
     string readLine;
@@ -155,8 +152,8 @@ int main(){
         istringstream iss(input);
         iss >> req_command.doit;
         iss >> req_command.id;
-        for (int i = 0; i < 4; ++i) {
-            iss >> req_command.res[i];
+        for (int & re : req_command.res) {
+            iss >> re;
         }
 
         commands.pop_back();
